@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="Dining Management Data Models" id="Project-22fa" database="MongoDb" >
+	<comment><![CDATA[Thise DB design represents the relations between those data models which are necessary to run our beloved dining system - "1 no Mess" . Possible data models are 
+
+-  User
+-  Payment
+-  Shopping]]></comment>
+	<schema name="Dining Management Data Models" >
+		<table name="ACTIVATION_REQUESTS" prior="ACTIVATION_REQUEST" >
+			<column name="_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="USER_id" type="objectId" jt="-8" />
+			<column name="card_no" type="string" jt="12" mandatory="y" />
+			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<column name="activation_date" type="date" jt="91" />
+			<index name="_id_" unique="PRIMARY_KEY" >
+				<column name="_id" />
+			</index>
+		</table>
+		<table name="CONSUMED_MEALS" prior="CONSUMED" >
+			<comment><![CDATA[Keeps the records of meals an user has eaten]]></comment>
+			<column name="_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="card_no" type="string" jt="12" mandatory="y" />
+			<column name="USER_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="date_of_consumption" type="date" jt="91" mandatory="y" />
+			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<index name="_id_" unique="PRIMARY_KEY" >
+				<column name="_id" />
+			</index>
+		</table>
+		<table name="DEACTIVATION_REQUESTS" prior="DEACTIVATION_DATE" >
+			<column name="_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="USER_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="card_no" type="string" jt="12" mandatory="y" />
+			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<column name="deactivation_start_date" type="date" jt="91" mandatory="y" />
+			<column name="deactivation_end_date" type="date" jt="91" />
+			<index name="_id_" unique="PRIMARY_KEY" >
+				<column name="_id" />
+			</index>
+		</table>
+		<table name="PAYMENTS" prior="Collection" >
+			<comment><![CDATA[Keeps the records of the payments a user has made.
+
+Relations
+- USER :: _id  		<>  PAYMENT :: USER_id (ObjectId)
+- USER :: card_no 	<>  PAYMENT :: card_no (String)]]></comment>
+			<column name="_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="payment_amount" type="double" jt="8" mandatory="y" >
+				<defo><![CDATA[0.00]]></defo>
+				<comment><![CDATA[Payment amount in BDT (Bangladeshi Taka)]]></comment>
+			</column>
+			<column name="User_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="card_no" type="string" jt="12" mandatory="y" />
+			<column name="committe_no" prior="comitte_no" type="int" jt="4" mandatory="y" >
+				<comment><![CDATA[The current Committe Number.]]></comment>
+			</column>
+			<index name="_id_" unique="PRIMARY_KEY" >
+				<column name="_id" />
+			</index>
+		</table>
+		<table name="USER" prior="User" >
+			<comment><![CDATA[A user can be either -- 
+
+1) A regular client who pays the bill and dines
+2) A member of the commitee as
+    a) Manager
+    b) Cashier]]></comment>
+			<column name="_id" type="objectId" jt="-8" mandatory="y" />
+			<column name="full_name" type="string" jt="12" mandatory="y" >
+				<comment><![CDATA[Contains the name of the user]]></comment>
+			</column>
+			<column name="card_no" type="string" jt="12" mandatory="y" >
+				<comment><![CDATA[Contains the card no the user is holding.
+
+Can be used as Foreign key in other collections / models.]]></comment>
+			</column>
+			<column name="last_payment_amount" type="double" jt="8" mandatory="y" >
+				<defo><![CDATA[0.00]]></defo>
+			</column>
+			<column name="last_payment_date" type="date" jt="91" mandatory="y" />
+			<column name="balance" type="double" jt="8" mandatory="y" >
+				<defo><![CDATA[0.00]]></defo>
+			</column>
+			<column name="consumed_meals" type="array[object]" jt="4999545" mandatory="y" >
+				<comment><![CDATA[This is an array which contains the dates user has consumed meal. Conventiend way of tracking how many meal  a user has eaten as well as occasions based on date.]]></comment>
+			</column>
+			<column name="active_status" type="bool" jt="16" mandatory="y" >
+				<defo><![CDATA[false]]></defo>
+			</column>
+			<column name="next_day_active" type="bool" jt="16" mandatory="y" >
+				<defo><![CDATA[false]]></defo>
+			</column>
+			<index name="_id_" unique="PRIMARY_KEY" >
+				<column name="_id" />
+			</index>
+			<fk name="fk_user_payments" virtual="y" to_schema="Dining Management Data Models" to_table="PAYMENTS" >
+				<fk_column name="card_no" pk="card_no" />
+				<fk_column name="_id" pk="User_id" />
+				<comment><![CDATA[Keeps the records of the payments a user has made.
+
+Relations
+- USER :: _id  		<>  PAYMENT :: USER_id (ObjectId)
+- USER :: card_no 	<>  PAYMENT :: card_no (String)]]></comment>
+			</fk>
+			<fk name="fk_user_consumed_meals" virtual="y" to_schema="Dining Management Data Models" to_table="CONSUMED_MEALS" >
+				<fk_column name="card_no" pk="card_no" />
+				<fk_column name="_id" pk="USER_id" />
+			</fk>
+			<fk name="fk_user_activation_requests" virtual="y" to_schema="Dining Management Data Models" to_table="ACTIVATION_REQUESTS" >
+				<fk_column name="card_no" pk="card_no" />
+				<fk_column name="_id" pk="USER_id" />
+			</fk>
+			<fk name="fk_user_deactivation_requests" virtual="y" to_schema="Dining Management Data Models" to_table="DEACTIVATION_REQUESTS" >
+				<fk_column name="card_no" pk="card_no" />
+				<fk_column name="_id" pk="USER_id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-2327" show_relation="columns" >
+		<entity schema="Dining Management Data Models" name="ACTIVATION_REQUESTS" color="C1D8EE" x="368" y="416" />
+		<entity schema="Dining Management Data Models" name="CONSUMED_MEALS" color="C1D8EE" x="624" y="192" />
+		<entity schema="Dining Management Data Models" name="DEACTIVATION_REQUESTS" color="C1D8EE" x="544" y="416" />
+		<entity schema="Dining Management Data Models" name="PAYMENTS" color="C1EEC1" x="400" y="48" />
+		<entity schema="Dining Management Data Models" name="USER" color="C1D8EE" x="48" y="64" />
+	</layout>
+</project>
