@@ -10,7 +10,7 @@
 			<column name="_id" type="objectId" jt="-8" mandatory="y" />
 			<column name="USER_id" type="objectId" jt="-8" />
 			<column name="card_no" type="string" jt="12" mandatory="y" />
-			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<column name="committee_no" prior="committe_no" type="int" jt="4" mandatory="y" />
 			<column name="activation_date" type="date" jt="91" />
 			<index name="_id_" unique="PRIMARY_KEY" >
 				<column name="_id" />
@@ -22,7 +22,7 @@
 			<column name="card_no" type="string" jt="12" mandatory="y" />
 			<column name="USER_id" type="objectId" jt="-8" mandatory="y" />
 			<column name="date_of_consumption" type="date" jt="91" mandatory="y" />
-			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<column name="committee_no" prior="committe_no" type="int" jt="4" mandatory="y" />
 			<index name="_id_" unique="PRIMARY_KEY" >
 				<column name="_id" />
 			</index>
@@ -31,7 +31,7 @@
 			<column name="_id" type="objectId" jt="-8" mandatory="y" />
 			<column name="USER_id" type="objectId" jt="-8" mandatory="y" />
 			<column name="card_no" type="string" jt="12" mandatory="y" />
-			<column name="committe_no" type="int" jt="4" mandatory="y" />
+			<column name="committee_no" prior="committe_no" type="int" jt="4" mandatory="y" />
 			<column name="deactivation_start_date" type="date" jt="91" mandatory="y" />
 			<column name="deactivation_end_date" type="date" jt="91" />
 			<index name="_id_" unique="PRIMARY_KEY" >
@@ -51,7 +51,7 @@ Relations
 			</column>
 			<column name="User_id" type="objectId" jt="-8" mandatory="y" />
 			<column name="card_no" type="string" jt="12" mandatory="y" />
-			<column name="committe_no" prior="comitte_no" type="int" jt="4" mandatory="y" >
+			<column name="committee_no" prior="committe_no" type="int" jt="4" mandatory="y" >
 				<comment><![CDATA[The current Committe Number.]]></comment>
 			</column>
 			<index name="_id_" unique="PRIMARY_KEY" >

@@ -11,7 +11,7 @@
 			<column name="USER_id" type="objectId" jt="-8" />
 			<column name="card_no" type="string" jt="12" mandatory="y" />
 			<column name="committee_no" prior="committe_no" type="int" jt="4" mandatory="y" />
-			<column name="activation_date" type="date" jt="91" />
+			<column name="activation_date" type="date" jt="91" mandatory="y" />
 			<index name="_id_" unique="PRIMARY_KEY" >
 				<column name="_id" />
 			</index>
