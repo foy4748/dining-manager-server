@@ -19,7 +19,9 @@ router.post("/", paymentObjectValidation, async (req, res) => {
   const hasError = !error.isEmpty();
 
   if (hasError) {
-    return res.status(403).send({ error: "Invalid Payload" });
+    return res
+      .status(403)
+      .send({ error: true, message: "Invalid PAYMENT Payload" });
   }
 
   try {
