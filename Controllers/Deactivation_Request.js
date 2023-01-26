@@ -7,7 +7,7 @@ const router = express.Router();
 const DEACTIVATION_REQUESTS = require("../Models/DEACTIVATION_REQUESTS");
 
 // Importing Payment Object Schema
-const deactivationRequestValidation = require("../FormValidators/ActivationRequestSchema");
+const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
 
 router.post("/", deactivationRequestValidation, async (req, res) => {
   const error = validationResult(req).formatWith(({ msg }) => msg);
@@ -32,3 +32,5 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     });
   }
 });
+
+module.exports = router;

@@ -32,3 +32,5 @@ router.post("/", activationRequestValidation, async (req, res) => {
     });
   }
 });
+
+module.exports = router;
