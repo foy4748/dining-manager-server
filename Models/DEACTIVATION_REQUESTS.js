@@ -7,6 +7,10 @@ const deactivationRequestSchemaObj = {
   committee_no: String,
   deactivation_start_date: Date,
   deactivation_end_date: Date,
+	resolved: {
+		type: Boolean,
+		default: false
+	}
 };
 
 const deactivationRequestSchema = new Schema(deactivationRequestSchemaObj);
