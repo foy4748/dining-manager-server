@@ -14,11 +14,13 @@ app.use(express.json());
 const PaymentsAPI = require("./Controllers/Payments");
 const ActivateMealAPI = require("./Controllers/Activation_Request");
 const DeactivateMealAPI = require("./Controllers/Deactivation_Request");
+const ConsumedMealAPI = require("./Controllers/Consumed_Meals")
 
 // Using Routers
 app.use("/payments", PaymentsAPI);
 app.use("/activate-meal", ActivateMealAPI);
 app.use("/deactivate-meal", DeactivateMealAPI);
+app.use("/consumed-meal", ConsumedMealAPI);
 
 app.get("/", (req, res) => {
   return res.send({ message: "DINING MANAGER SERVER is UP and RUNNING" });
