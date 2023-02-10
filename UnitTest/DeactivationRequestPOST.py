@@ -7,10 +7,9 @@ base_URL = "http://localhost:3001"
 common_payload = { "User_id":"123456789123456789123456", "card_no":"242","committee_no":"102" }
 
 
-payload = { "User_id":"123456789123456789123456", "card_no":"242","committee_no":"102", "deactivation_start_date": datetime.now().isoformat(), "deactivation_end_date": (datetime.now() + timedelta(days=1)  ).isoformat()}
+payload = { "User_id":"123456789123456789123456", "card_no":"242","committee_no":"102", "deactivation_start_date": "2023-02-11", "deactivation_end_date": "2023-02-14"}
 
-print((datetime.now() + timedelta(days=1)  ).isoformat())
 
 response = rq.post(url=base_URL + "/deactivate-meal",json=payload, headers={"Content-Type":"application/json"})
 
-print(response.text);
+print(response.text)

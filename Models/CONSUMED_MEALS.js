@@ -1,14 +1,12 @@
 const mongoose = require("mongoose");
-const { Schema, ObjectId } = mongoose;
+const { Schema } = mongoose;
+const { ObjectId } = mongoose.Types;
 
 const consumedMealSchemaObj = {
   card_no: String,
   User_id: ObjectId,
   committee_no: String,
-  date_of_consumption: {
-    type: String,
-    validate: /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/gm,
-  },
+  date_of_consumption: String,
 };
 
 const consumedMealSchema = new Schema(consumedMealSchemaObj, {
