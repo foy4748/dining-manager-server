@@ -9,6 +9,7 @@ const router = express.Router();
 // Importing Models
 const CONSUMED_MEAL = require("../Models/CONSUMED_MEALS");
 const DEACTIVATION_REQUEST = require("../Models/DEACTIVATION_REQUESTS");
+const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
 
 // Importing Consumed Meal Object Schema
 const consumedMealObjectValidation = require("../FormValidators/ConsumedMealSchema");
@@ -37,16 +38,16 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
   try {
     const newConsumedMealEntry = new CONSUMED_MEAL(req.body);
     const response = await newConsumedMealEntry.save();
-    let { card_no, User_id } = req.body;
-    User_id = new ObjectId(User_id);
+    let { card_no, User_id, committee_no } = req.body;
+    User_id_ObjectId = new ObjectId(User_id);
 
-    const tomorrow = moment().add(1, "days");
-    const deactivation_start_date = moment(tomorrow).format("YYYY-MM-DD");
+    let tomorrow = moment().add(1, "days");
+    tomorrow = moment(tomorrow).format("YYYY-MM-DD");
 
     const query = {
-      User_id,
+      User_id: User_id_ObjectId,
       card_no,
-      deactivation_start_date,
+      deactivation_start_date: tomorrow,
     };
 
     const isDeactivated = await DEACTIVATION_REQUEST.findOne(query);
@@ -58,10 +59,22 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
             "Meal is DEACTIVATED tomorrow. Successfully POSTED Consumed Meal info.",
         })
         .end();
-    } else {
-      response["message"] = "Successfully POSTED Consumed Meal info";
-      return res.send(response).end();
     }
+
+    const newActiveMealObj = {
+      card_no,
+      User_id,
+      committee_no,
+      active_date: tomorrow,
+    };
+
+    const newActiveMealEntity = new ACTIVE_MEAL(newActiveMealObj);
+    await newActiveMealEntity.save();
+
+    response[
+      "message"
+    ] = `Successfully POSTED Consumed Meal info. Activated meal for ${tomorrow}`;
+    return res.send(response).end();
   } catch (error) {
     console.error(error);
     return res
