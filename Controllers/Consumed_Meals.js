@@ -80,6 +80,7 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
     };
 
     // Selecting Meal Type
+    // [IMPORTANT] Supposed to receive from FrontEnd in Request Object
     const meal_type = { type: "friday_meals", extra_meal: false };
 
     //Checking whether the counter exists or not
@@ -105,6 +106,8 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
       isFoundCounter[meal_type.extra_meal ? "extra_meals" : "meal_count"][
         meal_type.type
       ] += 1;
+
+      // Updating Increased Meal Count
       const updatedResponse = await MEAL_COUNTER.findOneAndUpdate(
         { _id: isFoundCounter._id },
         isFoundCounter

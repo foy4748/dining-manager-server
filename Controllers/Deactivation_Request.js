@@ -8,7 +8,7 @@ const router = express.Router();
 // Importing Models
 const DEACTIVATION_REQUESTS = require("../Models/DEACTIVATION_REQUESTS");
 const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
-const MEAL_COUNTER = require("../Models/MEAL_COUNTER");
+const { MEAL_COUNTER } = require("../Models/MEAL_COUNTER");
 
 // Importing Payment Object Schema
 const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
@@ -29,21 +29,45 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     response["message"] = "Successfully POSTED deactivation info";
     const { card_no, deactivation_start_date, committee_no, User_id } =
       req.body;
-    const query = {
+
+    const activeMealQuery = {
       card_no,
       User_id: new ObjectId(User_id),
       active_date: deactivation_start_date,
     };
-    const isActivated = await ACTIVE_MEAL.findOne(query);
+
+    const counterQuery = {
+      card_no,
+      User_id: new ObjectId(User_id),
+      committee_no,
+    };
+
+    const isActivated = await ACTIVE_MEAL.findOne(activeMealQuery);
+    console.log("isActivated");
+    console.log(isActivated);
+    // [IMPORTANT] Supposed to receive from FrontEnd in Request Object
+    const meal_type = { type: "friday_meals", extra_meal: false };
+
     if (isActivated) {
-      const decreaseCounter = await MEAL_COUNTER.findOneAndUpdate(
-        { card_no, User_id: new ObjectId(User_id), committee_no },
-        { meal_count: { $inc: { regular_meals: -1 } } },
-        { upsert: true }
+      const isFoundCounter = await MEAL_COUNTER.findOne(counterQuery);
+
+      // Decreasing Meal Count in Blank Counter
+      isFoundCounter[meal_type.extra_meal ? "extra_meals" : "meal_count"][
+        meal_type.type
+      ] -= 1;
+      console.log("Decreasing MealCount");
+      // Updating Decreased Meal Count
+      const updatedResponse = await MEAL_COUNTER.findOneAndUpdate(
+        { _id: isFoundCounter._id },
+        isFoundCounter
       );
-      const deleteResponse = await ACTIVE_MEAL.deleteOne({
+      console.log("updatedResponse");
+      console.log(updatedResponse);
+
+      await ACTIVE_MEAL.deleteOne({
         _id: new ObjectId(isActivated._id),
       });
+
       response["message"] =
         "Successfully POSTED deactivation info & Deleted from Active Meal List";
     }
