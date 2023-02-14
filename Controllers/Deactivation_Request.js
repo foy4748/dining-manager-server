@@ -8,6 +8,7 @@ const router = express.Router();
 // Importing Models
 const DEACTIVATION_REQUESTS = require("../Models/DEACTIVATION_REQUESTS");
 const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
+const MEAL_COUNTER = require("../Models/MEAL_COUNTER");
 
 // Importing Payment Object Schema
 const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
@@ -35,6 +36,11 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     };
     const isActivated = await ACTIVE_MEAL.findOne(query);
     if (isActivated) {
+      const decreaseCounter = await MEAL_COUNTER.findOneAndUpdate(
+        { card_no, User_id: new ObjectId(User_id), committee_no },
+        { meal_count: { $inc: { regular_meals: -1 } } },
+        { upsert: true }
+      );
       const deleteResponse = await ACTIVE_MEAL.deleteOne({
         _id: new ObjectId(isActivated._id),
       });

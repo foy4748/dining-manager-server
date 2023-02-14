@@ -10,6 +10,7 @@ const router = express.Router();
 const CONSUMED_MEAL = require("../Models/CONSUMED_MEALS");
 const DEACTIVATION_REQUEST = require("../Models/DEACTIVATION_REQUESTS");
 const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
+const { MEAL_COUNTER, MealCounterClass } = require("../Models/MEAL_COUNTER");
 
 // Importing Consumed Meal Object Schema
 const consumedMealObjectValidation = require("../FormValidators/ConsumedMealSchema");
@@ -70,6 +71,47 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
 
     const newActiveMealEntity = new ACTIVE_MEAL(newActiveMealObj);
     await newActiveMealEntity.save();
+
+    delete query["deactivation_start_date"];
+    const counterQuery = {
+      card_no,
+      User_id: User_id_ObjectId,
+      committee_no,
+    };
+
+    // Selecting Meal Type
+    const meal_type = { type: "friday_meals", extra_meal: false };
+
+    //Checking whether the counter exists or not
+    const isFoundCounter = await MEAL_COUNTER.findOne(counterQuery);
+
+    // Initializing Counter if counter is NOT present
+    if (!isFoundCounter) {
+      const blankCounterObj = new MealCounterClass(
+        card_no,
+        User_id,
+        committee_no
+      );
+
+      // Increasing Meal Count in Blank Counter
+      blankCounterObj[meal_type.extra_meal ? "extra_meals" : "meal_count"][
+        meal_type.type
+      ] += 1;
+      const blankCounter = new MEAL_COUNTER(blankCounterObj);
+      const postResponse = await blankCounter.save();
+      console.log(postResponse);
+    } else {
+      // Increasing Meal Count
+      isFoundCounter[meal_type.extra_meal ? "extra_meals" : "meal_count"][
+        meal_type.type
+      ] += 1;
+      const updatedResponse = await MEAL_COUNTER.findOneAndUpdate(
+        { _id: isFoundCounter._id },
+        isFoundCounter
+      );
+      console.log("updatedResponse");
+      console.log(updatedResponse);
+    }
 
     response[
       "message"
