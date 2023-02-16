@@ -10,7 +10,13 @@ const router = express.Router();
 const CONSUMED_MEAL = require("../Models/CONSUMED_MEALS");
 const DEACTIVATION_REQUEST = require("../Models/DEACTIVATION_REQUESTS");
 const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
-const { MEAL_COUNTER, MealCounterClass } = require("../Models/MEAL_COUNTER");
+const {
+  MEAL_COUNTER,
+  MealCounterClass,
+  Counter,
+  increaseCount,
+  decreaseCount,
+} = require("../Models/MEAL_COUNTER");
 
 // Importing Consumed Meal Object Schema
 const consumedMealObjectValidation = require("../FormValidators/ConsumedMealSchema");
@@ -53,6 +59,7 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
 
     const isDeactivated = await DEACTIVATION_REQUEST.findOne(query);
 
+    // Checking If Meal Deactivation Request was made by User
     if (isDeactivated) {
       return res
         .send({
@@ -61,16 +68,6 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
         })
         .end();
     }
-
-    const newActiveMealObj = {
-      card_no,
-      User_id,
-      committee_no,
-      active_date: tomorrow,
-    };
-
-    const newActiveMealEntity = new ACTIVE_MEAL(newActiveMealObj);
-    await newActiveMealEntity.save();
 
     delete query["deactivation_start_date"];
     const counterQuery = {
@@ -82,6 +79,22 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
     // Selecting Meal Type
     // [IMPORTANT] Supposed to receive from FrontEnd in Request Object
     const meal_type = { type: "friday_meals", extra_meal: false };
+
+    const meal_count = new Counter();
+    const extra_meals = new Counter();
+
+    increaseCount(meal_count, meal_type.type, 1);
+    const newActiveMealObj = {
+      card_no,
+      User_id,
+      committee_no,
+      active_date: tomorrow,
+      meal_count,
+      extra_meals,
+    };
+
+    const newActiveMealEntity = new ACTIVE_MEAL(newActiveMealObj);
+    await newActiveMealEntity.save();
 
     //Checking whether the counter exists or not
     const isFoundCounter = await MEAL_COUNTER.findOne(counterQuery);

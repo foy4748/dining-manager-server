@@ -8,7 +8,7 @@ const router = express.Router();
 // Importing Models
 const DEACTIVATION_REQUESTS = require("../Models/DEACTIVATION_REQUESTS");
 const ACTIVE_MEAL = require("../Models/ACTIVE_MEALS");
-const { MEAL_COUNTER } = require("../Models/MEAL_COUNTER");
+const { MEAL_COUNTER, decreaseCount } = require("../Models/MEAL_COUNTER");
 
 // Importing Payment Object Schema
 const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
@@ -46,15 +46,28 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     console.log("isActivated");
     console.log(isActivated);
     // [IMPORTANT] Supposed to receive from FrontEnd in Request Object
-    const meal_type = { type: "friday_meals", extra_meal: false };
+    // const meal_type = { type: "friday_meals", extra_meal: false };
 
     if (isActivated) {
       const isFoundCounter = await MEAL_COUNTER.findOne(counterQuery);
 
       // Decreasing Meal Count in Blank Counter
-      isFoundCounter[meal_type.extra_meal ? "extra_meals" : "meal_count"][
-        meal_type.type
-      ] -= 1;
+      // May Require to IMPLEMENT meal or extra-meal selective deactivation
+      Object.keys(isFoundCounter.meal_count).forEach((type) => {
+        decreaseCount(
+          isFoundCounter.meal_count,
+          type,
+          isActivated.meal_count[type]
+        );
+      });
+      Object.keys(isFoundCounter.extra_meals).forEach((type) => {
+        decreaseCount(
+          isFoundCounter.extra_meals,
+          type,
+          isActivated.extra_meals[type]
+        );
+      });
+
       console.log("Decreasing MealCount");
       // Updating Decreased Meal Count
       const updatedResponse = await MEAL_COUNTER.findOneAndUpdate(
