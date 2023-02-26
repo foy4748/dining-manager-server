@@ -13,6 +13,23 @@ const { MEAL_COUNTER, decreaseCount } = require("../Models/MEAL_COUNTER");
 // Importing Payment Object Schema
 const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
 
+router.get("/", async (req, res) => {
+  const { card_no, user_id } = req.headers;
+  try {
+    const response = await DEACTIVATION_REQUESTS.find({
+      card_no,
+      User_id: new ObjectId(user_id),
+    });
+    return res.send(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(501).send({
+      error: true,
+      message: "FAILED to  GET  deactivation data",
+    });
+  }
+});
+
 router.post("/", deactivationRequestValidation, async (req, res) => {
   const error = validationResult(req).formatWith(({ msg }) => msg);
   const hasError = !error.isEmpty();
@@ -24,11 +41,27 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
   }
 
   try {
+    const { card_no, deactivation_start_date, committee_no, User_id } =
+      req.body;
+    //Checking if Meal is already deactivated
+    const isDeactivated = await DEACTIVATION_REQUESTS.findOne({
+      card_no,
+      committee_no,
+      User_id: new ObjectId(User_id),
+      deactivation_start_date,
+    });
+
+    // If alread De-activated, then send Response
+    if (isDeactivated) {
+      return res.send({
+        alreadyExists: true,
+        message: `Meal is already De-activated from ${deactivation_start_date}`,
+      });
+    }
+
     const newDeactivationEntry = new DEACTIVATION_REQUESTS(req.body);
     const response = await newDeactivationEntry.save();
     response["message"] = "Successfully POSTED deactivation info";
-    const { card_no, deactivation_start_date, committee_no, User_id } =
-      req.body;
 
     const activeMealQuery = {
       card_no,
@@ -43,8 +76,10 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     };
 
     const isActivated = await ACTIVE_MEAL.findOne(activeMealQuery);
-    console.log("isActivated");
-    console.log(isActivated);
+
+    // console.log("isActivated");
+    // console.log(isActivated);
+
     // [IMPORTANT] Supposed to receive from FrontEnd in Request Object
     // const meal_type = { type: "friday_meals", extra_meal: false };
 
@@ -60,6 +95,7 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
           isActivated.meal_count[type]
         );
       });
+
       Object.keys(isFoundCounter.extra_meals).forEach((type) => {
         decreaseCount(
           isFoundCounter.extra_meals,
