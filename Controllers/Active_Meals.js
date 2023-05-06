@@ -15,9 +15,10 @@ router.post("/", activeMealsValidation, async (req, res, nxt) => {
   const hasError = !error.isEmpty();
 
   if (hasError) {
-    return res
-      .status(403)
-      .send({ error: true, message: "Invalid ACTIVATE MEAL payload" });
+    res.status(403);
+    res.msg = "Invalid ACTIVATE MEAL payload";
+    const error = { error: true, message: res.msg };
+    nxt(error);
   }
 
   try {
@@ -26,7 +27,7 @@ router.post("/", activeMealsValidation, async (req, res, nxt) => {
     response["message"] = "Successfully POSTED activation info";
     return res.send(response);
   } catch (error) {
-    res.status_code = 501;
+    res.status(501);
     res.msg = "FAILED to  POSTED requestion activation info";
     nxt(error);
   }

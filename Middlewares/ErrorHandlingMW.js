@@ -1,6 +1,6 @@
 const ErrorHandlingMW = (error, req, res, nxt) => {
   console.error(error);
-  return res.status(res.status_code).send({
+  return res.send({
     error: true,
     message: res.msg,
   });

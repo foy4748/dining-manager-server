@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.mongo;
 
 const router = express.Router();
+const ErrorHandlingMW = require("../Middlewares/ErrorHandlingMW");
 
 // Importing Models
 const CONSUMED_MEAL = require("../Models/CONSUMED_MEALS");
@@ -21,25 +22,26 @@ const {
 // Importing Consumed Meal Object Schema
 const consumedMealObjectValidation = require("../FormValidators/ConsumedMealSchema");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, nxt) => {
   try {
     const records = await CONSUMED_MEAL.find({});
     return res.send({ message: "Consumed Meal API endpoint working", records });
   } catch (error) {
-    console.error(error);
-    return res.send({ message: "Failed" });
+    res.status(501);
+    res.msg = "FAILED to GET Consumed Meal records";
+    nxt(error);
   }
 });
 
-router.post("/", consumedMealObjectValidation, async (req, res) => {
+router.post("/", consumedMealObjectValidation, async (req, res, nxt) => {
   const error = validationResult(req).formatWith(({ msg }) => msg);
   const hasError = !error.isEmpty();
 
   if (hasError) {
-    return res
-      .status(403)
-      .send({ error: true, message: "Invalid CONSUMED_MEAL Payload" })
-      .end();
+    res.status(403);
+    res.msg = "Invalid CONSUMED_MEAL Payload";
+    const error = { error: true, message: res.msg };
+    nxt(error);
   }
 
   try {
@@ -134,12 +136,11 @@ router.post("/", consumedMealObjectValidation, async (req, res) => {
     ] = `Successfully POSTED Consumed Meal info. Activated meal for ${tomorrow}`;
     return res.send(response).end();
   } catch (error) {
-    console.error(error);
-    return res
-      .status(501)
-      .send({ error: true, message: "FAILED to  POST consumed meal info" })
-      .end();
+    res.status(501);
+    res.msg = "FAILED to  POST consumed meal info";
+    nxt(error);
   }
 });
 
+router.use(ErrorHandlingMW);
 module.exports = router;

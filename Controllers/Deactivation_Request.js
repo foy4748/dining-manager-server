@@ -23,20 +23,21 @@ router.get("/", async (req, res, nxt) => {
     });
     return res.send(response);
   } catch (error) {
-    res.status_code = 501;
+    res.status(501);
     res.msg = "FAILED to  GET  deactivation data";
     nxt(error);
   }
 });
 
-router.post("/", deactivationRequestValidation, async (req, res) => {
+router.post("/", deactivationRequestValidation, async (req, res, nxt) => {
   const error = validationResult(req).formatWith(({ msg }) => msg);
   const hasError = !error.isEmpty();
 
   if (hasError) {
-    return res
-      .status(403)
-      .send({ error: true, message: "Invalid DEACTIVATION REQUEST payload" });
+    res.status(403);
+    res.msg = "Invalid DEACTIVATION REQUEST payload";
+    const error = { error: true, message: req.msg };
+    nxt(error);
   }
 
   try {
@@ -122,10 +123,9 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
     return res.send(response);
   } catch (error) {
     console.error(error);
-    return res.status(501).send({
-      error: true,
-      message: "FAILED to  POSTED requestion deactivation info",
-    });
+    res.status(501);
+    res.msg = "FAILED to  POSTED requestion deactivation info";
+    nxt(error);
   }
 });
 
