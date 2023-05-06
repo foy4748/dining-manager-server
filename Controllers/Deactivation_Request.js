@@ -12,8 +12,9 @@ const { MEAL_COUNTER, decreaseCount } = require("../Models/MEAL_COUNTER");
 
 // Importing Payment Object Schema
 const deactivationRequestValidation = require("../FormValidators/DeactivationRequestSchema");
+const ErrorHandlingMW = require("../Middlewares/ErrorHandlingMW");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, nxt) => {
   const { card_no, user_id } = req.headers;
   try {
     const response = await DEACTIVATION_REQUESTS.find({
@@ -22,11 +23,9 @@ router.get("/", async (req, res) => {
     });
     return res.send(response);
   } catch (error) {
-    console.error(error);
-    return res.status(501).send({
-      error: true,
-      message: "FAILED to  GET  deactivation data",
-    });
+    res.status_code = 501;
+    res.msg = "FAILED to  GET  deactivation data";
+    nxt(error);
   }
 });
 
@@ -130,4 +129,5 @@ router.post("/", deactivationRequestValidation, async (req, res) => {
   }
 });
 
+router.use(ErrorHandlingMW);
 module.exports = router;
